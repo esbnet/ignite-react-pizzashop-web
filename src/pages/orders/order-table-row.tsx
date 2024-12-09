@@ -2,13 +2,17 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { ArrowRight, Search, X } from "lucide-react";
 
+import { OrderStatus } from "@/components/order-status";
 import { Button } from "@/components/ui/button";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { useState } from "react";
 import OrderDatails from "./order-datails";
 
 interface OrderTableRowProps {
 	order: {
 		orderId: string;
-		createdAt: string;
+		createdAt: Date;
 		status: "pending" | "canceled" | "processing" | "delivering" | "delivered";
 		customerName: string;
 		total: number;
@@ -16,10 +20,11 @@ interface OrderTableRowProps {
 }
 
 export default function OrderTableRow({ order }: OrderTableRowProps) {
+	const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 	return (
 		<TableRow>
 			<TableCell>
-				<Dialog>
+				<Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
 					<DialogTrigger asChild>
 						<Button variant={"outline"} size={"icon"}>
 							<Search className="w-3 h-3" />
@@ -27,21 +32,30 @@ export default function OrderTableRow({ order }: OrderTableRowProps) {
 						</Button>
 					</DialogTrigger>
 
-					<OrderDatails />
+					<OrderDatails open={isDetailsOpen} orderId={order.orderId} />
 				</Dialog>
 			</TableCell>
 			<TableCell className="font-medium font-mono text-xs">
 				{order.orderId}
 			</TableCell>
-			<TableCell className="text-muted-foreground">39 dias</TableCell>
+			<TableCell className="text-muted-foreground">
+				{formatDistanceToNow(order.createdAt, {
+					addSuffix: true,
+					locale: ptBR,
+				})}
+			</TableCell>
 			<TableCell>
 				<div className="flex items-center gap-2">
-					<span className="bg-slate-400 rounded-full w-2 h-2" />
-					<span className="font-medium text-muted-foreground">Pendente</span>
+					<OrderStatus status={order.status} />
 				</div>
 			</TableCell>
 			<TableCell className="font-medium">{order.customerName}</TableCell>
-			<TableCell className="font-medium">R$ {order.total}</TableCell>
+			<TableCell className="text-right font-medium">
+				{(order.total / 100).toLocaleString("pt-BR", {
+					style: "currency",
+					currency: "BRL",
+				})}
+			</TableCell>
 
 			<TableCell className="flex justify-between items-center gap-2 text-center">
 				<Button variant={"outline"}>
