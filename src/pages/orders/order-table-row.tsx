@@ -6,6 +6,7 @@ import { OrderStatus } from "@/components/order-status";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useState } from "react";
 import OrderDatails from "./order-datails";
 
 interface OrderTableRowProps {
@@ -19,10 +20,11 @@ interface OrderTableRowProps {
 }
 
 export default function OrderTableRow({ order }: OrderTableRowProps) {
+	const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 	return (
 		<TableRow>
 			<TableCell>
-				<Dialog>
+				<Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
 					<DialogTrigger asChild>
 						<Button variant={"outline"} size={"icon"}>
 							<Search className="w-3 h-3" />
@@ -30,7 +32,7 @@ export default function OrderTableRow({ order }: OrderTableRowProps) {
 						</Button>
 					</DialogTrigger>
 
-					<OrderDatails />
+					<OrderDatails open={isDetailsOpen} orderId={order.orderId} />
 				</Dialog>
 			</TableCell>
 			<TableCell className="font-medium font-mono text-xs">
@@ -49,7 +51,7 @@ export default function OrderTableRow({ order }: OrderTableRowProps) {
 			</TableCell>
 			<TableCell className="font-medium">{order.customerName}</TableCell>
 			<TableCell className="text-right font-medium">
-				{order.total.toLocaleString("pt-BR", {
+				{(order.total / 100).toLocaleString("pt-BR", {
 					style: "currency",
 					currency: "BRL",
 				})}
